@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.idemilagrescript.MainController">
+
+    <!-- ================= TOP ================= -->
+    <top>
+        <VBox>
+            <!-- Menu -->
+            <MenuBar>
+                <Menu text="File">
+                    <MenuItem text="Open Directory" fx:id="openDirectoryItem"/>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="New File (.ms)" fx:id="newFileItem"/>
+                    <MenuItem text="New Folder" fx:id="newFolderItem"/>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Save" fx:id="saveItem"/>
+                    <MenuItem text="Save All" fx:id="saveAllItem"/>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Exit"/>
+                </Menu>
+
+            </MenuBar>
+
+            <!-- Toolbar -->
+            <ToolBar>
+                <Separator/>
+                <Label text="Status:"/>
+                <Label fx:id="statusLabel" text="Ready"/>
+                <Pane HBox.hgrow="ALWAYS"/>
+                <Label fx:id="autosaveLabel" text="Autosave: ON"/>
+            </ToolBar>
+        </VBox>
+    </top>
+
+    <!-- ================= LEFT ================= -->
+    <left>
+        <VBox prefWidth="250">
+            <Label text="Project Explorer"
+                   style="-fx-font-weight: bold; -fx-padding: 5 5 5 5;"/>
+            <TreeView fx:id="projectTreeView" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </left>
+
+    <!-- ================= CENTER ================= -->
+    <center>
+        <TabPane fx:id="editorTabPane" tabClosingPolicy="ALL_TABS">
+            <!-- Tabs de arquivos serão adicionadas dinamicamente -->
+        </TabPane>
+    </center>
+
+    <!-- ================= BOTTOM ================= -->
+    <bottom>
+        <TabPane prefHeight="200" tabClosingPolicy="UNAVAILABLE">
+            <tabs>
+                <Tab text="Problems">
+                    <BorderPane>
+                        <TableView fx:id="problemsTable">
+                            <columns>
+                                <TableColumn text="Line" prefWidth="70"/>
+                                <TableColumn text="Column" prefWidth="70"/>
+                                <TableColumn text="Message" prefWidth="500"/>
+                            </columns>
+                        </TableView>
+                    </BorderPane>
+                </Tab>
+
+                <Tab text="Terminal">
+                    <TextArea fx:id="terminalArea"
+                              wrapText="true"/>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </bottom>
+
+</BorderPane>
