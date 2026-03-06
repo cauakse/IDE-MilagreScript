@@ -2,7 +2,8 @@ package com.example.idemilagrescript.editor;
 
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TextArea;
+import org.fxmisc.richtext.CodeArea;
+import org.fxmisc.richtext.LineNumberFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,8 +20,13 @@ public class EditorService {
     public void openFile(Path path) throws IOException {
         String content = Files.readString(path);
 
-        TextArea area = new TextArea(content);
-        Tab tab = new Tab(path.getFileName().toString(), area);
+        CodeArea codeArea = new CodeArea();
+
+        codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea)); // Isso aqui que faz a numeção das linas
+
+        codeArea.replaceText(0, 0, content);
+
+        Tab tab = new Tab(path.getFileName().toString(), codeArea);
         tab.setUserData(path);
 
         tabPane.getTabs().add(tab);
@@ -32,7 +38,7 @@ public class EditorService {
         if (tab == null) return;
 
         Path path = (Path) tab.getUserData();
-        TextArea area = (TextArea) tab.getContent();
+        CodeArea area = (CodeArea) tab.getContent();
 
         Files.writeString(path, area.getText());
     }
@@ -40,7 +46,7 @@ public class EditorService {
     public void saveAll() throws IOException {
         for (Tab tab : tabPane.getTabs()) {
             Path path = (Path) tab.getUserData();
-            TextArea area = (TextArea) tab.getContent();
+            CodeArea area = (CodeArea) tab.getContent();
             Files.writeString(path, area.getText());
         }
     }

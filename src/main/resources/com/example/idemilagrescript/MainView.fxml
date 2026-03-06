@@ -9,10 +9,8 @@
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.example.idemilagrescript.MainController">
 
-    <!-- ================= TOP ================= -->
     <top>
         <VBox>
-            <!-- Menu -->
             <MenuBar>
                 <Menu text="File">
                     <MenuItem text="Open Directory" fx:id="openDirectoryItem"/>
@@ -28,8 +26,8 @@
 
             </MenuBar>
 
-            <!-- Toolbar -->
             <ToolBar>
+                <Button text="Run Lexer" fx:id="runLexerButton" onAction="#handleRunLexer"/>
                 <Separator/>
                 <Label text="Status:"/>
                 <Label fx:id="statusLabel" text="Ready"/>
@@ -39,7 +37,6 @@
         </VBox>
     </top>
 
-    <!-- ================= LEFT ================= -->
     <left>
         <VBox prefWidth="250">
             <Label text="Project Explorer"
@@ -48,14 +45,11 @@
         </VBox>
     </left>
 
-    <!-- ================= CENTER ================= -->
     <center>
         <TabPane fx:id="editorTabPane" tabClosingPolicy="ALL_TABS">
-            <!-- Tabs de arquivos serão adicionadas dinamicamente -->
         </TabPane>
     </center>
 
-    <!-- ================= BOTTOM ================= -->
     <bottom>
         <TabPane prefHeight="200" tabClosingPolicy="UNAVAILABLE">
             <tabs>

@@ -205,4 +205,6 @@ public class MainController {
     }
 
 
+    public void handleRunLexer(ActionEvent actionEvent) {
+    }
 }
