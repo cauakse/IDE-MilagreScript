@@ -11,6 +11,19 @@ public class Token {
         this.line = line;
     }
 
+    public TokenType getType() {
+        return type;
+    }
+
+    public String getLexeme() {
+        return lexeme;
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+
     @Override
     public String toString() {
         return String.format("Token(%-15s, '%s', linha %d)", type, lexeme, line);

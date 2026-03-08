@@ -1,0 +1,4 @@
+.error {
+    -fx-fill: red;
+    -fx-underline: true;
+}

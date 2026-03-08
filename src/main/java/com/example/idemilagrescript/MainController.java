@@ -1,22 +1,41 @@
 package com.example.idemilagrescript;
 
+import com.example.idemilagrescript.compiler.LexError;
+import com.example.idemilagrescript.compiler.LexerAnalyser;
 import com.example.idemilagrescript.editor.EditorService;
 import com.example.idemilagrescript.project.FileManager;
 import com.example.idemilagrescript.terminal.PtyTerminalService;
+import javafx.application.Platform;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.event.ActionEvent;
+import javafx.scene.control.cell.PropertyValueFactory;
+import org.fxmisc.richtext.CodeArea;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import static jdk.jfr.consumer.EventStream.openFile;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MainController {
 
     private PtyTerminalService terminalService;
     private FileManager fileManager;
     private EditorService editorService;
+    private LexerAnalyser lexer = new LexerAnalyser();
+
+    private final Map<CodeArea, ObservableList<LexError>> problemsByEditor = new HashMap<>();
+
+    @FXML private TableView<LexError> problemsTable;
+    @FXML private TableColumn<LexError, Integer> lineColumn;
+    @FXML private TableColumn<LexError, Integer> columnColumn;
+    @FXML private TableColumn<LexError, String> messageColumn;
 
     @FXML private MenuItem newFileItem;
     @FXML private MenuItem newFolderItem;
@@ -26,19 +45,37 @@ public class MainController {
 
     @FXML private TreeView<Path> projectTreeView;
     @FXML private TabPane editorTabPane;
-    @FXML private TableView<?> problemsTable;
     @FXML private TextArea terminalArea;
     @FXML private Label statusLabel;
     @FXML private Label autosaveLabel;
 
     @FXML
     public void initialize() {
+
         statusLabel.setText("Ready");
-        autosaveLabel.setText("Autosave: ON");
 
         terminalService = new PtyTerminalService(terminalArea);
         editorService = new EditorService(editorTabPane);
         fileManager = new FileManager(projectTreeView);
+        problemsTable.setItems(FXCollections.observableArrayList());
+
+        lineColumn.setCellValueFactory(new PropertyValueFactory<>("line"));
+        columnColumn.setCellValueFactory(new PropertyValueFactory<>("column"));
+        messageColumn.setCellValueFactory(new PropertyValueFactory<>("message"));
+
+        editorTabPane.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldTab, newTab) -> {
+
+                    if (newTab == null) return;
+
+                    CodeArea editor = (CodeArea) newTab.getContent();
+
+                    ObservableList<LexError> list =
+                            problemsByEditor.getOrDefault(editor,
+                                    FXCollections.observableArrayList());
+
+                    problemsTable.setItems(list);
+                });
 
         ContextMenu contextMenu = new ContextMenu();
 
@@ -59,7 +96,7 @@ public class MainController {
 
         projectTreeView.setOnMouseClicked(event -> {
 
-            if (event.getClickCount() != 2) return; // só duplo clique
+            if (event.getClickCount() != 2) return;
 
             TreeItem<Path> selected =
                     projectTreeView.getSelectionModel().getSelectedItem();
@@ -70,7 +107,16 @@ public class MainController {
 
             if (Files.isRegularFile(path)) {
                 try {
-                    editorService.openFile(path);
+
+                    CodeArea editor = editorService.openFile(path);
+                    editor.getStylesheets().add(
+                            getClass().getResource("/editor.css").toExternalForm()
+                    );
+
+                    attachLexer(editor);
+
+                    runLexer(editor);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -107,6 +153,33 @@ public class MainController {
         bindActions();
     }
 
+    private void highlightErrors(CodeArea editor, List<LexError> errors) {
+
+        editor.clearStyle(0, editor.getLength());
+
+        for (LexError e : errors) {
+
+            int start = e.getOffset();
+            int end = start + e.getLength();
+
+            if (start >= 0 && end <= editor.getLength()) {
+
+                editor.setStyle(
+                        start,
+                        end,
+                        Collections.singleton("error")
+                );
+            }
+        }
+    }
+
+    public void attachLexer(CodeArea editor) {
+
+        editor.multiPlainChanges()
+                .successionEnds(java.time.Duration.ofMillis(300))
+                .subscribe(ignore -> runLexer(editor));
+    }
+
     private void bindActions() {
 
         if (newFileItem != null)
@@ -124,10 +197,6 @@ public class MainController {
         if (openDirectoryItem != null)
             openDirectoryItem.setOnAction(e -> fileManager.chooseAndOpenDirectory());
     }
-
-    // ======================================================
-    // ================== HANDLERS ==========================
-    // ======================================================
 
     private void handleNewFile(ActionEvent event) {
 
@@ -181,12 +250,14 @@ public class MainController {
     }
 
     private void showError(String message) {
+
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setHeaderText(message);
         alert.showAndWait();
     }
 
     private void handleSave(ActionEvent event) {
+
         try {
             editorService.saveCurrent();
             statusLabel.setText("File saved");
@@ -196,6 +267,7 @@ public class MainController {
     }
 
     private void handleSaveAll(ActionEvent event) {
+
         try {
             editorService.saveAll();
             statusLabel.setText("All files saved");
@@ -204,7 +276,43 @@ public class MainController {
         }
     }
 
+    private void runLexer(CodeArea editor) {
 
-    public void handleRunLexer(ActionEvent actionEvent) {
+        String text = editor.getText();
+
+        List<LexError> errors = lexer.analyze(text);
+        System.out.println("Tokens: " + lexer.getTokens().size() + ", Errors: " + errors.size());
+        for (int i = 0; i < lexer.getTokens().size(); i++) {
+            System.out.println(lexer.getTokens().get(i).getType() + " -> " + lexer.getTokens().get(i).getLexeme());
+        }
+
+        ObservableList<LexError> list = problemsByEditor.computeIfAbsent(
+                editor,
+                e -> FXCollections.observableArrayList()
+        );
+
+        list.setAll(errors);
+
+        highlightErrors(editor, errors);
+        if (isEditorSelected(editor)) {
+            problemsTable.setItems(list);
+        }
+
+    }
+
+    private boolean isEditorSelected(CodeArea editor) {
+
+        Tab tab = editorTabPane.getSelectionModel().getSelectedItem();
+
+        if (tab == null) return false;
+
+        return tab.getContent() == editor;
+    }
+
+    private void updateProblems(List<LexError> errors) {
+
+        Platform.runLater(() -> {
+            problemsTable.getItems().setAll(errors);
+        });
     }
 }

@@ -17,12 +17,13 @@ public class EditorService {
         this.tabPane = tabPane;
     }
 
-    public void openFile(Path path) throws IOException {
+    public CodeArea openFile(Path path) throws IOException {
+
         String content = Files.readString(path);
 
         CodeArea codeArea = new CodeArea();
 
-        codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea)); // Isso aqui que faz a numeção das linas
+        codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
 
         codeArea.replaceText(0, 0, content);
 
@@ -31,6 +32,8 @@ public class EditorService {
 
         tabPane.getTabs().add(tab);
         tabPane.getSelectionModel().select(tab);
+
+        return codeArea;
     }
 
     public void saveCurrent() throws IOException {

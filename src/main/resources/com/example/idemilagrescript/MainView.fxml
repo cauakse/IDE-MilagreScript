@@ -27,7 +27,6 @@
             </MenuBar>
 
             <ToolBar>
-                <Button text="Run Lexer" fx:id="runLexerButton" onAction="#handleRunLexer"/>
                 <Separator/>
                 <Label text="Status:"/>
                 <Label fx:id="statusLabel" text="Ready"/>
@@ -55,13 +54,15 @@
             <tabs>
                 <Tab text="Problems">
                     <BorderPane>
-                        <TableView fx:id="problemsTable">
-                            <columns>
-                                <TableColumn text="Line" prefWidth="70"/>
-                                <TableColumn text="Column" prefWidth="70"/>
-                                <TableColumn text="Message" prefWidth="500"/>
-                            </columns>
-                        </TableView>
+                        <center>
+                            <TableView fx:id="problemsTable">
+                                <columns>
+                                    <TableColumn fx:id="lineColumn" text="Line" prefWidth="70"/>
+                                    <TableColumn fx:id="columnColumn" text="Column" prefWidth="70"/>
+                                    <TableColumn fx:id="messageColumn" text="Message" prefWidth="500"/>
+                                </columns>
+                            </TableView>
+                        </center>
                     </BorderPane>
                 </Tab>
 
