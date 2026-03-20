@@ -19,6 +19,7 @@ public class LexerAnalyser {
 
     private int line;
     private int column;
+    private int startLine;
     private int startColumn;
 
     private static final Map<String, TokenType> keywords;
@@ -56,11 +57,12 @@ public class LexerAnalyser {
 
         while (!isAtEnd()) {
             start = current;
+            startLine = line;
             startColumn = column;
             scanToken();
         }
 
-        tokens.add(new Token(TokenType.EOF, "", line));
+        tokens.add(new Token(TokenType.EOF, "", line, column, current, 0));
 
         return errors;
     }
@@ -82,7 +84,7 @@ public class LexerAnalyser {
 
     private void addToken(TokenType type) {
         String text = source.substring(start, current);
-        tokens.add(new Token(type, text, line));
+        tokens.add(new Token(type, text, startLine, startColumn, start, current - start));
     }
 
     private void scanToken() {
@@ -160,7 +162,7 @@ public class LexerAnalyser {
 
         errors.add(
                 new LexError(
-                        line,
+                    startLine,
                         startColumn,
                         start,
                         length,
@@ -184,7 +186,18 @@ public class LexerAnalyser {
 
         while (isDigit(peek())) advance();
 
+        if (peek() == '.' && isDigit(peekNext())) {
+            advance();
+
+            while (isDigit(peek())) advance();
+        }
+
         addToken(TokenType.NUMERO);
+    }
+
+    private char peekNext() {
+        if (current + 1 >= source.length()) return '\0';
+        return source.charAt(current + 1);
     }
 
     private void identifier() {
@@ -198,7 +211,7 @@ public class LexerAnalyser {
         if (type == null)
             type = TokenType.IDENTIFICADOR;
 
-        tokens.add(new Token(type, text, line));
+        tokens.add(new Token(type, text, startLine, startColumn, start, current - start));
     }
 
     private void string() {
@@ -222,7 +235,7 @@ public class LexerAnalyser {
 
         String value = source.substring(start + 1, current - 1);
 
-        tokens.add(new Token(TokenType.STRING_LITERAL, value, line));
+        tokens.add(new Token(TokenType.STRING_LITERAL, value, startLine, startColumn, start, current - start));
     }
 
     private boolean isDigit(char c) {

@@ -2,6 +2,7 @@ package com.example.idemilagrescript;
 
 import com.example.idemilagrescript.compiler.LexError;
 import com.example.idemilagrescript.compiler.LexerAnalyser;
+import com.example.idemilagrescript.compiler.ParserAnalyser;
 import com.example.idemilagrescript.editor.EditorService;
 import com.example.idemilagrescript.project.FileManager;
 import com.example.idemilagrescript.terminal.PtyTerminalService;
@@ -18,6 +19,7 @@ import org.fxmisc.richtext.CodeArea;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -280,10 +282,27 @@ public class MainController {
 
         String text = editor.getText();
 
-        List<LexError> errors = lexer.analyze(text);
-        System.out.println("Tokens: " + lexer.getTokens().size() + ", Errors: " + errors.size());
+        List<LexError> lexicalErrors = lexer.analyze(text);
+
+        ParserAnalyser parser = new ParserAnalyser(lexer.getTokens());
+        List<LexError> syntacticErrors = parser.parse();
+
+        List<LexError> errors = new ArrayList<>();
+        errors.addAll(lexicalErrors);
+        errors.addAll(syntacticErrors);
+
+        terminalService.printLine("Tokens: " + lexer.getTokens().size() + ", LexErrors: " + lexicalErrors.size() + ", SynErrors: " + syntacticErrors.size());
+
+        for (LexError syntaxError : syntacticErrors) {
+            terminalService.printLine("[ERRO SINTATICO] Linha " + syntaxError.getLine()
+                    + ", Coluna " + String.format("%02d", syntaxError.getColumn())
+                    + ": " + syntaxError.getMessage());
+        }
+
+        terminalService.printLine("[SUCESSO] Analise sintatica concluida com " + syntacticErrors.size() + " erro(s) encontrado(s).");
+
         for (int i = 0; i < lexer.getTokens().size(); i++) {
-            System.out.println(lexer.getTokens().get(i).getType() + " -> " + lexer.getTokens().get(i).getLexeme());
+            terminalService.printLine(lexer.getTokens().get(i).getType() + " -> " + lexer.getTokens().get(i).getLexeme());
         }
 
         ObservableList<LexError> list = problemsByEditor.computeIfAbsent(

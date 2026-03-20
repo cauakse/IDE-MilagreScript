@@ -91,6 +91,10 @@ public class PtyTerminalService {
         } catch (IOException ignored) {}
     }
 
+    public void printLine(String text) {
+        append(text + "\n");
+    }
+
     private void append(String text) {
         Platform.runLater(() -> {
             terminalArea.appendText(text);
