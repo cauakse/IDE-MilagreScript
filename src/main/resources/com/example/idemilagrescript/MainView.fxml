@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
 <BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.example.idemilagrescript.MainController">
-
+            fx:controller="com.example.idemilagrescript.MainController"
+            stylesheets="@/application.css">
     <top>
         <VBox>
             <MenuBar>
@@ -23,34 +18,45 @@
                     <SeparatorMenuItem/>
                     <MenuItem text="Exit"/>
                 </Menu>
-
             </MenuBar>
+            <HBox styleClass="tool-bar" alignment="CENTER_LEFT" spacing="10">
+                <Separator orientation="VERTICAL"/>
 
-            <ToolBar>
-                <Separator/>
                 <Label text="Status:"/>
                 <Label fx:id="statusLabel" text="Ready"/>
-                <Pane HBox.hgrow="ALWAYS"/>
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <Button fx:id="themeToggleButton"
+                        id="themeToggleButton"
+                        text="☀ Light Mode"
+                        onAction="#toggleTheme"
+                        style="-fx-cursor: hand;">
+                    <tooltip>
+                        <Tooltip text="Alternar entre modo escuro e claro"/>
+                    </tooltip>
+                </Button>
+
                 <Label fx:id="autosaveLabel" text="Autosave: ON"/>
-            </ToolBar>
+            </HBox>
         </VBox>
     </top>
-
     <left>
-        <VBox prefWidth="250">
-            <Label text="Project Explorer"
-                   style="-fx-font-weight: bold; -fx-padding: 5 5 5 5;"/>
+        <VBox prefWidth="250" style="-fx-border-color: #30363d; -fx-border-width: 0 1 0 0;">
+            <Label text="PROJECT EXPLORER"
+                   fx:id="projectExplorerLabel"
+                   maxWidth="Infinity"
+                   style="-fx-font-weight: bold; -fx-padding: 10 12 6 14; -fx-font-size: 11px;"/>
             <TreeView fx:id="projectTreeView" VBox.vgrow="ALWAYS"/>
         </VBox>
     </left>
-
     <center>
         <TabPane fx:id="editorTabPane" tabClosingPolicy="ALL_TABS">
         </TabPane>
     </center>
-
     <bottom>
-        <TabPane prefHeight="200" tabClosingPolicy="UNAVAILABLE">
+        <TabPane prefHeight="200" tabClosingPolicy="UNAVAILABLE"
+                 styleClass="bottom-tab-pane">
             <tabs>
                 <Tab text="Problems">
                     <BorderPane>
@@ -65,13 +71,13 @@
                         </center>
                     </BorderPane>
                 </Tab>
-
                 <Tab text="Terminal">
                     <TextArea fx:id="terminalArea"
-                              wrapText="true"/>
+                              id="terminalArea"
+                              wrapText="true"
+                              />
                 </Tab>
             </tabs>
         </TabPane>
     </bottom>
-
 </BorderPane>

@@ -7,11 +7,10 @@ import com.example.idemilagrescript.editor.EditorService;
 import com.example.idemilagrescript.project.FileManager;
 import com.example.idemilagrescript.terminal.PtyTerminalService;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.event.ActionEvent;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -24,6 +23,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.fxmisc.richtext.model.StyleSpansBuilder;
+import java.util.Collection;
+import com.example.idemilagrescript.tokens.Token;
+import com.example.idemilagrescript.tokens.TokenType;
 
 public class MainController {
 
@@ -50,6 +54,11 @@ public class MainController {
     @FXML private TextArea terminalArea;
     @FXML private Label statusLabel;
     @FXML private Label autosaveLabel;
+
+    @FXML
+    private Button themeToggleButton;
+    private boolean isDarkMode = true; // Flag de estado do tema
+
 
     @FXML
     public void initialize() {
@@ -157,7 +166,7 @@ public class MainController {
 
     private void highlightErrors(CodeArea editor, List<LexError> errors) {
 
-        editor.clearStyle(0, editor.getLength());
+        //editor.clearStyle(0, editor.getLength());
 
         for (LexError e : errors) {
 
@@ -311,7 +320,7 @@ public class MainController {
         );
 
         list.setAll(errors);
-
+        aplicarDestaque(editor, lexer.getTokens());
         highlightErrors(editor, errors);
         if (isEditorSelected(editor)) {
             problemsTable.setItems(list);
@@ -333,5 +342,111 @@ public class MainController {
         Platform.runLater(() -> {
             problemsTable.getItems().setAll(errors);
         });
+    }
+
+    @FXML
+    private void toggleTheme() {
+        Scene scene = editorTabPane.getScene();
+
+        ObservableList<String> styleClasses = scene.getRoot().getStyleClass();
+
+        if (isDarkMode) {
+            // Ativar modo claro
+            styleClasses.add("theme-light");
+            themeToggleButton.setText("🌙 Dark Mode");
+        } else {
+            // Ativar modo escuro
+            styleClasses.remove("theme-light");
+            themeToggleButton.setText("☀ Light Mode");
+        }
+
+        isDarkMode = !isDarkMode;
+    }
+
+    //É uma função onde reconhece o token o qual esta sendo escrito, e consequentemente altera sua cor
+    private String getStyleClassForToken(TokenType type) {
+        switch (type) {
+            // Tipos nativos
+            case VOID:
+                case CHAR:
+                    case INT:
+                        case DOUBLE:
+                            case SHORT:
+                                case LONG:
+                                    case STRING:
+                return "type";
+            // Palavras reservadas (controle de fluxo)
+            case IF: case ELSE: case WHILE: case RETURN:
+                return "keyword";
+            // Literais
+            case STRING_LITERAL:
+                return "string";
+            case NUMERO:
+                return "number";
+            // Operadores
+            case MAIS:
+                case MENOS:
+                    case VEZES:
+                        case DIVISAO:
+                            case ATRIBUICAO:
+            case IGUAL:
+                case DIFERENTE:
+                    case MAIOR:
+                        case MENOR:
+                            case MAIOR_IGUAL:
+                                case MENOR_IGUAL:
+            case NOT:
+                case AND:
+                    case OR:
+                return "operator";
+            // Delimitadores
+            case ABRE_PAREN:
+                case FECHA_PAREN:
+                    case ABRE_CHAVE:
+                        case FECHA_CHAVE:
+                            case PONTO_VIRGULA:
+                return "punctuation";
+            // Identificadores (variáveis, nomes de funções)
+            case IDENTIFICADOR:
+                return "identifier";
+            default:
+                return null;
+        }
+    }
+
+    // Seria para aplicar a coloração das letrinhas em nossa IDE
+    private void aplicarDestaque(CodeArea editor, List<Token> tokens) {
+        StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+        int lastPos = 0;
+
+        for (int i = 0; i < tokens.size(); i++) {
+            Token token = tokens.get(i);
+
+            // Só processa se não for o fim de arquivo
+            if (token.getType() != TokenType.EOF) {
+                String styleClass = getStyleClassForToken(token.getType()); // Aqui ele vai reconher se tem um token sendo escrito para aplciar a coloração
+                int gap = token.getOffset() - lastPos;
+
+                // Preenche o espaço vazio que o lexer ignorou por exemplo um espaço
+                if (gap > 0)
+                    spansBuilder.add(Collections.emptyList(), gap);
+
+                // Aplica a classe CSS no tamanho exato da palavra do token
+                if (styleClass != null && !styleClass.isEmpty())
+                    spansBuilder.add(Collections.singleton(styleClass), token.getLength());
+                else
+                    spansBuilder.add(Collections.emptyList(), token.getLength());
+
+                lastPos = token.getOffset() + token.getLength();
+            }
+        }
+
+        //Preenche o restinho final do texto, se caso sobrar alguma coisa depois do último token
+        int textLength = editor.getLength();
+        if (lastPos < textLength)
+            spansBuilder.add(Collections.emptyList(), textLength - lastPos);
+
+        // Aplica todos os estilos calculados no editor de uma só vez
+        editor.setStyleSpans(0, spansBuilder.create());
     }
 }
