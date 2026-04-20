@@ -13,6 +13,8 @@ public class ParserAnalyser {
     private final List<LexError> errors = new ArrayList<>();
     private int current;
 
+    private static class ParseException extends RuntimeException {}
+
     private static final EnumSet<TokenType> TYPE_START = EnumSet.of(
             TokenType.VOID,
             TokenType.CHAR,
@@ -46,37 +48,37 @@ public class ParserAnalyser {
         current = 0;
 
         parsePrograma();
-        consume(TokenType.EOF, "fim de arquivo");
 
         return errors;
     }
 
     private void parsePrograma() {
-        while (!isAtEnd() && isCommandStart(peek().getType())) {
-            parseComando();
+        while (!isAtEnd()) {
+            if (isCommandStart(peek().getType())) {
+                parseComando();
+            } else {
+                addError(peek(), "Esperado início de comando, mas encontrado " + foundTokenText(peek()) + ".");
+                synchronize();
+            }
         }
     }
 
     private void parseComando() {
-        int errorsBefore = errors.size();
-
-        if (isTypeStart(peek().getType())) {
-            parseDeclaracao();
-        } else if (check(TokenType.IDENTIFICADOR)) {
-            parseAtribuicao();
-        } else if (check(TokenType.IF)) {
-            parseCondicional();
-        } else if (check(TokenType.WHILE)) {
-            parseRepeticao();
-        } else if (check(TokenType.RETURN)) {
-            parseReturn();
-        } else {
-            addError(peek(), "Esperado início de comando, mas encontrado " + foundTokenText(peek()) + ".");
-            synchronize();
-            return;
-        }
-
-        if (errors.size() > errorsBefore) {
+        try {
+            if (isTypeStart(peek().getType())) {
+                parseDeclaracao();
+            } else if (check(TokenType.IDENTIFICADOR)) {
+                parseAtribuicao();
+            } else if (check(TokenType.IF)) {
+                parseCondicional();
+            } else if (check(TokenType.WHILE)) {
+                parseRepeticao();
+            } else if (check(TokenType.RETURN)) {
+                parseReturn();
+            } else {
+                throw error(peek(), "Esperado início de comando, mas encontrado " + foundTokenText(peek()) + ".");
+            }
+        } catch (ParseException e) {
             synchronize();
         }
     }
@@ -106,13 +108,7 @@ public class ParserAnalyser {
         consume(TokenType.IDENTIFICADOR, "identificador");
         consume(TokenType.ATRIBUICAO, "'='");
         parseExpressao();
-
-        if (!check(TokenType.PONTO_VIRGULA)) {
-            addError(peek(), "Esperado ';' após expressão de atribuição, mas encontrado " + foundTokenText(peek()) + ".");
-            return;
-        }
-
-        advance();
+        consume(TokenType.PONTO_VIRGULA, "';'");
     }
 
     private void parseReturn() {
@@ -142,12 +138,7 @@ public class ParserAnalyser {
         consume(TokenType.WHILE, "'while'");
         consume(TokenType.ABRE_PAREN, "'('");
         parseExpressao();
-
-        if (!check(TokenType.FECHA_PAREN)) {
-            addError(peek(), "Estrutura 'while' sem parêntese de fechamento ')'.");
-        } else {
-            advance();
-        }
+        consume(TokenType.FECHA_PAREN, "')'");
 
         parseBlocoOuComando();
     }
@@ -171,7 +162,7 @@ public class ParserAnalyser {
                 TokenType.LONG,
                 TokenType.STRING
         )) {
-            addError(peek(), "Esperado tipo, mas encontrado " + foundTokenText(peek()) + ".");
+            throw error(peek(), "Esperado tipo, mas encontrado " + foundTokenText(peek()) + ".");
         }
     }
 
@@ -197,7 +188,6 @@ public class ParserAnalyser {
 
     private void parseExpLogicaNot() {
         while (match(TokenType.NOT)) {
-            // Not can repeat: !!!expr
         }
 
         parseExpRelacional();
@@ -239,7 +229,7 @@ public class ParserAnalyser {
             return;
         }
 
-        addError(peek(), "Esperado fator (identificador, número ou expressão entre parênteses), mas encontrado " + foundTokenText(peek()) + ".");
+        throw error(peek(), "Esperado fator (identificador, número ou expressão entre parênteses), mas encontrado " + foundTokenText(peek()) + ".");
     }
 
     private Token consume(TokenType expected, String expectedLabel) {
@@ -247,16 +237,12 @@ public class ParserAnalyser {
             return advance();
         }
 
-        addError(peek(), "Esperado " + expectedLabel + ", mas encontrado " + foundTokenText(peek()) + ".");
-
-        if (!isAtEnd()) {
-            return advance();
-        }
-
-        return peek();
+        throw error(peek(), "Esperado " + expectedLabel + ", mas encontrado " + foundTokenText(peek()) + ".");
     }
 
     private void synchronize() {
+        advance();
+
         while (!isAtEnd()) {
             if (previous().getType() == TokenType.PONTO_VIRGULA) {
                 return;
@@ -264,12 +250,17 @@ public class ParserAnalyser {
 
             TokenType nextType = peek().getType();
 
-            if (nextType == TokenType.FECHA_CHAVE || nextType == TokenType.ELSE || isCommandStart(nextType)) {
+            if (nextType == TokenType.FECHA_CHAVE || isCommandStart(nextType)) {
                 return;
             }
 
             advance();
         }
+    }
+
+    private ParseException error(Token token, String message) {
+        addError(token, message);
+        return new ParseException();
     }
 
     private void addError(Token token, String message) {
