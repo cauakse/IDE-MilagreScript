@@ -1,7 +1,7 @@
 package com.example.idemilagrescript.compiler;
 
-import com.example.idemilagrescript.tokens.Token;
-import com.example.idemilagrescript.tokens.TokenType;
+import com.example.idemilagrescript.utils.Token;
+import com.example.idemilagrescript.utils.TokenType;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,7 +1,7 @@
 package com.example.idemilagrescript.compiler;
 
-import com.example.idemilagrescript.tokens.Token;
-import com.example.idemilagrescript.tokens.TokenType;
+import com.example.idemilagrescript.utils.Token;
+import com.example.idemilagrescript.utils.TokenType;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -218,19 +218,42 @@ public class ParserAnalyser {
         }
     }
 
+
     private void parseFator() {
-        if (match(TokenType.IDENTIFICADOR, TokenType.NUMERO)) {
+
+        if (match(TokenType.IDENTIFICADOR, TokenType.NUMERO, TokenType.STRING_LITERAL)) {
             return;
         }
 
-        if (match(TokenType.ABRE_PAREN)) {
-            parseExpAritmetica();
+        if (check(TokenType.ABRE_PAREN)) {
+
+            if (isCastExpression()) {
+                advance();
+                consume(TokenType.FECHA_PAREN, "')'");
+                parseFator();
+                return;
+            }
+
+            advance();
+            parseExpressao();
             consume(TokenType.FECHA_PAREN, "')'");
             return;
         }
 
-        throw error(peek(), "Esperado fator (identificador, número ou expressão entre parênteses), mas encontrado " + foundTokenText(peek()) + ".");
+        throw error(peek(),
+                "Esperado fator (identificador, número, string ou expressão entre parênteses), " +
+                        "mas encontrado " + foundTokenText(peek()) + ".");
     }
+
+    private boolean isCastExpression() {
+        if (current + 2 < tokens.size()) {
+            TokenType next     = tokens.get(current + 1).getType();
+            TokenType nextNext = tokens.get(current + 2).getType();
+            return isTypeStart(next) && nextNext == TokenType.FECHA_PAREN;
+        }
+        return false;
+    }
+
 
     private Token consume(TokenType expected, String expectedLabel) {
         if (check(expected)) {
@@ -292,6 +315,7 @@ public class ParserAnalyser {
     private boolean isExpressionStart(TokenType type) {
         return type == TokenType.IDENTIFICADOR
                 || type == TokenType.NUMERO
+                || type == TokenType.STRING_LITERAL
                 || type == TokenType.ABRE_PAREN
                 || type == TokenType.NOT;
     }

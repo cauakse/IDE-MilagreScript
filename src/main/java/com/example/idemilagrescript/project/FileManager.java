@@ -119,7 +119,7 @@ public class FileManager {
     private void deleteDirectoryRecursively(Path path) throws IOException {
 
         Files.walk(path)
-                .sorted((a, b) -> b.compareTo(a)) // reverse
+                .sorted((a, b) -> b.compareTo(a))
                 .forEach(p -> {
                     try {
                         Files.delete(p);

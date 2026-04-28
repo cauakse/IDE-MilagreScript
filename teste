@@ -1,0 +1,16 @@
+int caua = 10;
+
+string cauaS = "a";
+
+while(caua > 10){
+	cauaS = "a";
+}
+
+if(cauaS != "10"){
+	int d = 10;
+	if(d > 20){
+		cauaS = "25";
+	}
+}
+
+int d = 20;

@@ -1,4 +1,4 @@
-package com.example.idemilagrescript.tokens;
+package com.example.idemilagrescript.utils;
 
 public class Token {
     public final TokenType type;

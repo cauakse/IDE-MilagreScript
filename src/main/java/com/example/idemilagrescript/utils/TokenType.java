@@ -1,4 +1,4 @@
-package com.example.idemilagrescript.tokens;
+package com.example.idemilagrescript.utils;
 
 public enum TokenType {
     VOID, CHAR, INT, DOUBLE, SHORT, LONG, STRING, // Identificadores

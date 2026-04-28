@@ -86,7 +86,7 @@ public class PtyTerminalService {
 
     public void interrupt() {
         try {
-            writer.write("\u0003"); // Ctrl+C
+            writer.write("\u0003");
             writer.flush();
         } catch (IOException ignored) {}
     }
