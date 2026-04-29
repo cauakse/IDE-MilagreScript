@@ -43,13 +43,13 @@ public class SemanticAnalyser {
         this.tokens = tokens;
     }
 
-    public List<LexError> analyze() {
-        errors.clear();
-        current = 0;
+    public List<LexError> analyze() { // Estrutura começa aqui analisando o escopo do código
+        errors.clear(); // limpa os erros antigos
+        current = 0; // Ponteiro que volta ao inicio
 
-        parsePrograma();
+        parsePrograma(); // Analisa o escopo do programa
 
-        reportUnused(symbolTable.getCurrentScopeSymbols());
+        reportUnused(symbolTable.getCurrentScopeSymbols()); // Vai verificar aquelas variaveis que estão largadas no programa, não estao utilizadas
 
         return errors;
     }
@@ -58,31 +58,36 @@ public class SemanticAnalyser {
         return symbolTable;
     }
 
-    private void parsePrograma() {
+    private void parsePrograma() { // Vai processar todos os comandos de nivel global, percorrendo token por token
         while (!isAtEnd()) {
-            if (isCommandStart(peek().getType())) {
+            if (isCommandStart(peek().getType()))
                 parseComando();
-            } else {
+            else
                 advance();
-            }
         }
     }
 
-    private void parseComando() {
+    private void parseComando() { // Aqui ele vai verificar os tokens daquelas variaveis/funções, verificando sua logica, se está correta, e com isso avança para proxima linha
         try {
             TokenType t = peek().getType();
-            if (isTypeStart(t))                parseDeclaracao();
-            else if (t == TokenType.IDENTIFICADOR) parseAtribuicao();
-            else if (t == TokenType.IF)            parseCondicional();
-            else if (t == TokenType.WHILE)         parseRepeticao();
-            else if (t == TokenType.RETURN)        parseReturn();
-            else                                   advance();
+            if (isTypeStart(t))
+                parseDeclaracao();
+            else if (t == TokenType.IDENTIFICADOR)
+                parseAtribuicao();
+            else if (t == TokenType.IF)
+                parseCondicional();
+            else if (t == TokenType.WHILE)
+                parseRepeticao();
+            else if (t == TokenType.RETURN)
+                parseReturn();
+            else
+                advance();
         } catch (SemanticException e) {
             synchronize();
         }
     }
 
-    private void parseBloco() {
+    private void parseBloco() { // Verifica se a lógica do abrir e fechar chaves, ou seja, bloco, foi aplicada de forma correta, contendo o bloco inicial "{" e fechando com o final "}"
         symbolTable.enterScope();
         consumeSilent(TokenType.ABRE_CHAVE);
 
@@ -90,40 +95,43 @@ public class SemanticAnalyser {
             parseComando();
         }
 
-        List<Symbol> saindo = symbolTable.exitScope();
+        List<Symbol> saindo = symbolTable.exitScope(); // Com isso aqui ele permite variaveis que foi usando somente naquele bloco, para ser usado em outro
         reportUnused(saindo);
 
         consumeSilent(TokenType.FECHA_CHAVE);
     }
 
-    private void parseDeclaracao() {
-        Token typeToken = advance();
-        TokenType declaredType = typeToken.getType();
+    private void parseDeclaracao() { // Aqui vai registra os símbolos na tabela, onde checa a redeclaração, e verifica o tipo da inicializaçao
+        Token typeToken = advance(); // Le o tipo de token daquela linha
+        TokenType declaredType = typeToken.getType(); // Le o nome do que ta vindo juntamente com aquele token
 
         Token nameToken = consumeSilent(TokenType.IDENTIFICADOR);
-        if (nameToken == null) { synchronize(); return; }
+        if (nameToken == null) {
+            synchronize();
+            return;
+        }
 
-        Symbol existing = symbolTable.lookupCurrentScope(nameToken.getLexeme());
+        Symbol existing = symbolTable.lookupCurrentScope(nameToken.getLexeme()); // Vai verificar se não duplicação da mesma variavel no escopo do codigo
         if (existing != null) {
             addError(nameToken,
                     "Variável '" + nameToken.getLexeme() + "' já declarada neste escopo " +
                             "(linha " + existing.getLine() + ", coluna " + existing.getColumn() + ").");
         }
 
-        Symbol symbol = new Symbol(
+        Symbol symbol = new Symbol(  // A partir daquele token, ele vai criar o simbolo
                 nameToken.getLexeme(), declaredType,
                 nameToken.getLine(), nameToken.getColumn(), nameToken.getOffset()
         );
 
-        if (match(TokenType.ATRIBUICAO)) {
+        if (match(TokenType.ATRIBUICAO)) { // Se caso ouver atribuição, o initialized é setado como true
             TokenType exprType = parseExpressao();
             symbol.setInitialized(true);
-            if (exprType != null) {
+            if (exprType != null) { // Verifica se é compativel com aquele token a qual aquele tipo foi declarado
                 checkAssignmentCompatibility(typeToken, declaredType, exprType);
             }
         }
 
-        symbolTable.declare(symbol);
+        symbolTable.declare(symbol); // É declarado na tabela
 
         consumeSilent(TokenType.PONTO_VIRGULA);
     }
@@ -182,7 +190,17 @@ public class SemanticAnalyser {
         else                            parseComando();
     }
 
-    private TokenType parseExpressao() {
+    // Hierarquia de precedência para análise das expressões
+    // parseExpressao()
+    // parseExpLogicaOr()
+    // parseExpLogicaAnd()
+    // parseExpLogicaNot()
+    // parseExpRelacional()
+    // parseExpAritmetica()
+    // parseTermo()
+    // parseFator()
+
+    private TokenType parseExpressao() { // Ele vai retornar qual tipo foi inferido da expressão
         return parseExpLogicaOr();
     }
 
@@ -211,17 +229,17 @@ public class SemanticAnalyser {
         return parseExpRelacional();
     }
 
-    private TokenType parseExpRelacional() {
+    private TokenType parseExpRelacional() { // A lógica de validação usando as expressões relacionais
         TokenType left = parseExpAritmetica();
 
         if (match(TokenType.IGUAL, TokenType.DIFERENTE,
                 TokenType.MAIOR, TokenType.MENOR,
-                TokenType.MAIOR_IGUAL, TokenType.MENOR_IGUAL)) {
+                TokenType.MAIOR_IGUAL, TokenType.MENOR_IGUAL)) { // Consome o token de expressão que esta naquela linha
 
             Token op = previous();
             TokenType right = parseExpAritmetica();
 
-            if (left != null && right != null) {
+            if (left != null && right != null) { // Variaveis auxiliares para verificar aquilo que esta sendo comparado entre as expressoes esta correta
                 boolean leftStr  = (left  == TokenType.STRING);
                 boolean rightStr = (right == TokenType.STRING);
                 if (leftStr != rightStr) {
@@ -257,9 +275,9 @@ public class SemanticAnalyser {
         return type;
     }
 
-    private TokenType parseFator() {
-
-        if (check(TokenType.IDENTIFICADOR)) {
+    private TokenType parseFator() { // Toda vez que ele entra nesse metodo, vai verificar se o atributo de Symbol initialized esta como true, se não, vai indicar o erro de lógica naquela linha
+        // Resolve os identificadores
+        if (check(TokenType.IDENTIFICADOR)) { // Verifica se a inicialiação da variavel
             Token idToken = advance();
             Symbol sym = symbolTable.lookup(idToken.getLexeme());
 
@@ -277,14 +295,15 @@ public class SemanticAnalyser {
             return sym.getType();
         }
 
-        if (check(TokenType.NUMERO)) {
+        // Infere os tipos de literais
+        if (check(TokenType.NUMERO)) { // Verifica se o retorno é um int ou double
             Token num = advance();
             return num.getLexeme() != null && num.getLexeme().contains(".")
                     ? TokenType.DOUBLE
                     : TokenType.INT;
         }
 
-        if (check(TokenType.STRING_LITERAL)) {
+        if (check(TokenType.STRING_LITERAL)) { // Se o retorno é realmente uma string
             advance();
             return TokenType.STRING;
         }
@@ -292,10 +311,10 @@ public class SemanticAnalyser {
         if (check(TokenType.ABRE_PAREN)) {
 
             if (isCastExpression()) {
-                return parseCast();
+                return parseCast(); // Processa os casts
             }
 
-            advance();
+            advance(); // Ou verifica se após aquele parentese inserido, tem um fecha logo após a condicional digitada no processo
             TokenType inner = parseExpressao();
             consumeSilent(TokenType.FECHA_PAREN);
             return inner;
@@ -304,16 +323,16 @@ public class SemanticAnalyser {
         return null;
     }
 
-    private boolean isCastExpression() {
+    private boolean isCastExpression() { // metodo para validar se possui um cast naquela linha "(int) 2.4"
         if (current + 2 < tokens.size()) {
             TokenType next     = tokens.get(current + 1).getType();
             TokenType nextNext = tokens.get(current + 2).getType();
-            return isTypeStart(next) && nextNext == TokenType.FECHA_PAREN;
+            return isTypeStart(next) && nextNext == TokenType.FECHA_PAREN; // Retorna como true, pois realmente faz sentido a lógica aplica para o cast
         }
         return false;
     }
 
-    private TokenType parseCast() {
+    private TokenType parseCast() { // É a validação do cast, se realmente ta fazendo sentido utilizar
         consumeSilent(TokenType.ABRE_PAREN);
         Token castTypeToken = advance();
         TokenType targetType = castTypeToken.getType();
@@ -321,15 +340,16 @@ public class SemanticAnalyser {
 
         TokenType sourceType = parseFator();
 
-        if (sourceType != null) {
+        if (sourceType != null) { // Se caso for inválido, ele vai tratar verificando como foi que aconteceu esse erro ao utilizar o cast
             if (!isValidCast(targetType, sourceType)) {
                 addError(castTypeToken,
                         "Cast inválido: não é possível converter '" + typeName(sourceType) +
                                 "' para '" + typeName(targetType) + "'.");
-            } else if (isNumeric(targetType) && isNumeric(sourceType)) {
+            }
+            else if (isNumeric(targetType) && isNumeric(sourceType)) {
                 int targetRank = TYPE_RANK.getOrDefault(targetType, -1);
                 int sourceRank = TYPE_RANK.getOrDefault(sourceType, -1);
-                if (targetRank < sourceRank) {
+                if (targetRank < sourceRank) { // Aqui é em relação se faz sentido realizar aquele cast, como exemplo disso seria string para int
                     addWarning(castTypeToken,
                             "Cast de '" + typeName(sourceType) + "' para '" + typeName(targetType) +
                                     "' pode causar perda de dados.");
@@ -340,14 +360,15 @@ public class SemanticAnalyser {
         return targetType;
     }
 
-    private void checkAssignmentCompatibility(Token context, TokenType target, TokenType source) {
+    private void checkAssignmentCompatibility(Token context, TokenType target, TokenType source) { // Verificação das contabilidade dos tipos
         if (target == source) return;
 
-        if (target == TokenType.VOID) {
+        if (target == TokenType.VOID) { // Se caso ja vier um void para declarar, ja retorna o erro
             addError(context, "Não é possível atribuir valor a variável do tipo 'void'.");
             return;
         }
 
+        // Um exemplo seria um "int x = 10.5", no qual ele notifica ao usuario avisando que pode houver a perca de dados ao fazer essa atribuição
         if (isNumeric(target) && isNumeric(source)) {
             int tRank = TYPE_RANK.getOrDefault(target, -1);
             int sRank = TYPE_RANK.getOrDefault(source, -1);
@@ -358,7 +379,7 @@ public class SemanticAnalyser {
             }
             return;
         }
-
+        // Um exemplo seria uma "string x = 10", ele vai validar verificando se naquela atriabuição tem a recorrencia do uso de aspas na atribuição
         if (target == TokenType.STRING || source == TokenType.STRING) {
             addError(context,
                     "Incompatibilidade de tipos: não é possível atribuir '" +
@@ -366,10 +387,11 @@ public class SemanticAnalyser {
         }
     }
 
-    private TokenType checkArithmeticTypes(Token op, TokenType left, TokenType right) {
-        if (left == null || right == null) return null;
+    private TokenType checkArithmeticTypes(Token op, TokenType left, TokenType right) { // Validação das operações aritiméticas, ou seja, 1 + 1
+        if (left == null || right == null)
+            return null;
 
-        if (left == TokenType.STRING && right == TokenType.STRING
+        if (left == TokenType.STRING && right == TokenType.STRING // Validação se é concatenação de duas strings, onde so pode ser concatenadas se houver um simbolo de mais entre elas
                 && op.getType() == TokenType.MAIS) {
             return TokenType.STRING;
         }
@@ -384,14 +406,14 @@ public class SemanticAnalyser {
         return promoteNumeric(left, right);
     }
 
-    private void checkLogicOperands(Token op, TokenType left, TokenType right) {
-        if (left == TokenType.STRING || right == TokenType.STRING) {
+    private void checkLogicOperands(Token op, TokenType left, TokenType right) { // Checagem se está feito correta o uso das condicionais, os operadores lógicos da linguagem
+        if (left == TokenType.STRING || right == TokenType.STRING) { // Pega as duas posições, direita ou esquerda do operador
             addError(op, "Operador lógico '" + op.getLexeme() +
                     "' não pode ser aplicado ao tipo 'string'.");
         }
     }
 
-    private void reportUnused(List<Symbol> symbols) {
+    private void reportUnused(List<Symbol> symbols) { // Verifica durante o escopo inteiro, andando nele e validando se seu uso ta recorrente no codigo, ou se esta ali jogada
         for (Symbol s : symbols) {
             if (!s.isUsed()) {
                 addWarning(s.getLine(), s.getColumn(), s.getOffset(), s.getName().length(),
@@ -419,8 +441,10 @@ public class SemanticAnalyser {
     }
 
     private boolean isValidCast(TokenType target, TokenType source) {
-        if (target == source)           return true;
-        if (isNumeric(target) && isNumeric(source)) return true;
+        if (target == source)
+            return true;
+        if (isNumeric(target) && isNumeric(source))
+            return true;
         return false;
     }
 
@@ -469,7 +493,7 @@ public class SemanticAnalyser {
         return peek().getType() == type;
     }
 
-    private Token advance() {
+    private Token advance() { // Ele avança para a proxima linha, diante aquela List de Map que guardou os tokens
         if (!isAtEnd()) current++;
         return previous();
     }
@@ -489,9 +513,11 @@ public class SemanticAnalyser {
     private void synchronize() {
         advance();
         while (!isAtEnd()) {
-            if (previous().getType() == TokenType.PONTO_VIRGULA) return;
+            if (previous().getType() == TokenType.PONTO_VIRGULA)
+                return;
             TokenType t = peek().getType();
-            if (t == TokenType.FECHA_CHAVE || isCommandStart(t)) return;
+            if (t == TokenType.FECHA_CHAVE || isCommandStart(t))
+                return;
             advance();
         }
     }

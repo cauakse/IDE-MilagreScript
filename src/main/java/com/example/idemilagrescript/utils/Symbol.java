@@ -4,15 +4,15 @@ import com.example.idemilagrescript.utils.TokenType;
 
 public class Symbol {
 
-    private final String name;
-    private final TokenType type;
-    private final int line;
-    private final int column;
-    private final int offset;
+    private final String name; // Nome da Variável
+    private final TokenType type; // Qual o tipo declarado
+    private final int line; // Posição a qual foi declarada no código, relacionado a linha
+    private final int column; // Posição a qual foi declarada no código, relacionado a coluna
+    private final int offset; // Posição absoluta do texto
     private int scopeDepth;
 
-    private boolean initialized;
-    private boolean used;
+    private boolean initialized; // Flag para saber se a varáivel recebeu algum parâmetro "int a = 20;"
+    private boolean used; // Flag para saber se a variável foi lida em alguma expressão
 
     public Symbol(String name, TokenType type, int line, int column, int offset) {
         this.name        = name;

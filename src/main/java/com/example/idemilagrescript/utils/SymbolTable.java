@@ -11,15 +11,16 @@ public class SymbolTable {
         enterScope();
     }
 
-    public void enterScope() {
+    public void enterScope() { // Empilha um bloco, ou seja, "{ }", quando ele é aberto
         scopes.add(new LinkedHashMap<>());
     }
 
 
-    public List<Symbol> exitScope() {
-        if (scopes.size() <= 1) return Collections.emptyList(); // nunca remove o global
+    public List<Symbol> exitScope() { // Desempilha o bloco, ou seja, "{ }", quando ele é fechado
+        if (scopes.size() <= 1)
+            return Collections.emptyList(); // nunca remove o global
         Map<String, Symbol> removed = scopes.remove(scopes.size() - 1);
-        return new ArrayList<>(removed.values());
+        return new ArrayList<>(removed.values()); // As linhas que não fazem sentido, ou tem inutilidade no código, used esta false, e com isso retorna o aviso no terminal para o usuário
     }
 
 
@@ -35,10 +36,12 @@ public class SymbolTable {
         return true;
     }
 
-    public Symbol lookup(String name) {
+    // Vai ocorrer a busca de simbolos diante o codigo inteiro
+    public Symbol lookup(String name) { // A busca percorre os escopos de dentro para fora,
         for (int i = scopes.size() - 1; i >= 0; i--) {
             Symbol s = scopes.get(i).get(name);
-            if (s != null) return s;
+            if (s != null)
+                return s; // Retorna o primeiro símbolo encontrado com o nome dado
         }
         return null;
     }
