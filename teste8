@@ -1,0 +1,7 @@
+int x = 5;
+if (x > 0) {
+    int y = 10;        
+    int z = y + x;    
+}
+
+int resultado2 = y; 

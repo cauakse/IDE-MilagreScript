@@ -1,0 +1,15 @@
+int externo; 
+int teste = 5;
+
+if (teste > 0) {
+    int dentro = 10.5;             
+    double x = 20.5;
+    int y = (int) x;               
+}
+
+while (teste > 0) {
+    int resultado = dentro + 5;   
+    int calc = externo + teste;    
+    teste = teste - 1;
+}
+

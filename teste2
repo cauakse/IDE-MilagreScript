@@ -1,0 +1,11 @@
+int contador;
+
+while (contador < 10) {            
+    int x = limite + 1;             
+    
+    double valor = 5.5;
+    int inteiro = (int)valor;          
+    
+    contador = temp + 1;           
+    contador = contador + 1;        
+}

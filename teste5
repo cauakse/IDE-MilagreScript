@@ -1,0 +1,16 @@
+char c = 300;                       
+
+short s = 100.5;                    
+
+long l = 5000;
+int i = 10;
+double d = 3.5;
+
+long resultado1 = l + i;            
+double resultado2 = i + d;          
+double resultado3 = (l + i) * d;    
+
+string mensagem = "valor";
+if (resultado1 == mensagem) {       
+    int x = mensagem + resultado2;  
+}
