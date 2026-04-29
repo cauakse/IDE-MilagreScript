@@ -538,29 +538,29 @@
 }
 
 /* ERROS / WARNINGS / SYNTAX */
-.error {
+.code-area .error {
     -fx-fill: #f85149;
     -fx-underline: true;
 }
 
-.theme-light .error {
+.theme-light .code-area .error {
     -fx-fill: #d1242f;
 }
 
-.warning {
+.code-area .warning {
     -fx-fill: #d29922;
     -fx-underline: true;
 }
 
-.theme-light .warning {
+.theme-light .code-area .warning {
     -fx-fill: #9a6700;
 }
 
-.info {
+.code-area .info {
     -fx-fill: #58a6ff;
 }
 
-.theme-light .info {
+.theme-light .code-area .info {
     -fx-fill: #0969da;
 }
 
@@ -570,6 +570,14 @@
     -fx-text-fill: #e6edf3;
     -fx-font-family: 'JetBrains Mono', monospace;
     -fx-font-size: 13.5px;
+}
+
+.code-area .text {
+    -fx-fill: #e6edf3;
+}
+
+.code-area .caret {
+    -fx-stroke: #e6edf3;
 }
 
 /* O RichTextFX usa um content/viewport interno que precisa ser pintado */
@@ -592,6 +600,14 @@
     -fx-text-fill: #24292f;
 }
 
+.theme-light .code-area .text {
+    -fx-fill: #24292f;
+}
+
+.theme-light .code-area .caret {
+    -fx-stroke: #24292f;
+}
+
 .theme-light .code-area .viewport,
 .theme-light .code-area .content {
     -fx-background-color: #f3f4f6;
@@ -605,26 +621,246 @@
 }
 
 /* SYNTAX HIGHLIGHT (RichTextFX - MODO ESCURO) */
-.keyword    { -fx-fill: #ff7b72; }
-.string     { -fx-fill: #a5d6ff; }
-.comment    { -fx-fill: #8b949e; -fx-font-style: italic; }
-.number     { -fx-fill: #79c0ff; }
-.function   { -fx-fill: #d2a8ff; }
-.operator   { -fx-fill: #ff7b72; }
-.type       { -fx-fill: #ffa657; }
-.identifier { -fx-fill: #e6edf3; }
-.punctuation{ -fx-fill: #8b949e; }
+.code-area .keyword    { -fx-fill: #ff7b72; }
+.code-area .string     { -fx-fill: #a5d6ff; }
+.code-area .comment    { -fx-fill: #8b949e; -fx-font-style: italic; }
+.code-area .number     { -fx-fill: #79c0ff; }
+.code-area .function   { -fx-fill: #d2a8ff; }
+.code-area .operator   { -fx-fill: #ff7b72; }
+.code-area .type       { -fx-fill: #ffa657; }
+.code-area .identifier { -fx-fill: #e6edf3; }
+.code-area .punctuation{ -fx-fill: #8b949e; }
 
 /* SYNTAX HIGHLIGHT (RichTextFX - MODO CLARO) */
-.theme-light .keyword     { -fx-fill: #cf222e; -fx-font-weight: bold; }
-.theme-light .type        { -fx-fill: #0550ae; -fx-font-weight: bold; }
-.theme-light .string      { -fx-fill: #032f62; }
-.theme-light .number      { -fx-fill: #0550ae; }
-.theme-light .comment     { -fx-fill: #6e7781; -fx-font-style: italic; }
-.theme-light .operator    { -fx-fill: #0969da; }
-.theme-light .function    { -fx-fill: #8250df; }
-.theme-light .identifier  { -fx-fill: #24292f; }
-.theme-light .punctuation { -fx-fill: #57606a; }
+.theme-light .code-area .keyword     { -fx-fill: #cf222e; -fx-font-weight: bold; }
+.theme-light .code-area .type        { -fx-fill: #0550ae; -fx-font-weight: bold; }
+.theme-light .code-area .string      { -fx-fill: #032f62; }
+.theme-light .code-area .number      { -fx-fill: #0550ae; }
+.theme-light .code-area .comment     { -fx-fill: #6e7781; -fx-font-style: italic; }
+.theme-light .code-area .operator    { -fx-fill: #0969da; }
+.theme-light .code-area .function    { -fx-fill: #8250df; }
+.theme-light .code-area .identifier  { -fx-fill: #24292f; }
+.theme-light .code-area .punctuation { -fx-fill: #57606a; }
+
+/* PAINEL TABELA DE SÍMBOLOS */
+.symbol-table-panel {
+    -fx-background-color: #161b22;
+    -fx-border-color: #30363d;
+    -fx-border-width: 0 0 0 1px;
+}
+
+.symbol-panel-header {
+    -fx-background-color: #1c2333;
+    -fx-padding: 10px 14px;
+    -fx-border-color: #30363d;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.symbol-panel-title {
+    -fx-text-fill: #8b949e;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.symbol-panel-close {
+    -fx-background-color: transparent;
+    -fx-text-fill: #8b949e;
+    -fx-font-size: 14px;
+    -fx-padding: 0 6px;
+    -fx-cursor: hand;
+}
+
+.symbol-panel-close:hover {
+    -fx-text-fill: #f85149;
+}
+
+#symbolTableToggleButton {
+    -fx-background-color: #21262d;
+    -fx-border-color: #30363d;
+    -fx-border-radius: 20px;
+    -fx-background-radius: 20px;
+    -fx-border-width: 1px;
+    -fx-text-fill: #e6edf3;
+    -fx-font-size: 13px;
+    -fx-padding: 4px 14px;
+    -fx-cursor: hand;
+}
+
+#symbolTableToggleButton:hover {
+    -fx-background-color: #2d333b;
+    -fx-border-color: #58a6ff;
+    -fx-effect: dropshadow(gaussian, rgba(88,166,255,0.25), 10, 0, 0, 0);
+}
+
+.symbol-table-panel .table-view {
+    -fx-background-color: #161b22;
+    -fx-border-color: transparent;
+}
+
+.symbol-table-panel .table-view .column-header-background {
+    -fx-background-color: #1c2333;
+    -fx-border-color: #30363d;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.symbol-table-panel .table-view .column-header .label {
+    -fx-text-fill: #58a6ff;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.symbol-table-panel .table-row-cell {
+    -fx-background-color: transparent;
+}
+
+.symbol-table-panel .table-row-cell:hover {
+    -fx-background-color: #21262d;
+}
+
+.symbol-table-panel .table-cell {
+    -fx-text-fill: #c9d1d9;
+    -fx-font-size: 12px;
+    -fx-padding: 4px 8px;
+}
+
+.symbol-table-panel .table-view .placeholder .label {
+    -fx-text-fill: #484f58;
+}
+
+/* TEMA CLARO - PAINEL TABELA DE SÍMBOLOS */
+.theme-light .symbol-table-panel {
+    -fx-background-color: #f6f8fa;
+    -fx-border-color: #d0d7de;
+}
+
+.theme-light .symbol-panel-header {
+    -fx-background-color: #eaeef2;
+    -fx-border-color: #d0d7de;
+}
+
+.theme-light .symbol-panel-title {
+    -fx-text-fill: #656d76;
+}
+
+.theme-light .symbol-panel-close {
+    -fx-text-fill: #656d76;
+}
+
+.theme-light .symbol-panel-close:hover {
+    -fx-text-fill: #d1242f;
+}
+
+.theme-light #symbolTableToggleButton {
+    -fx-background-color: #eaeef2;
+    -fx-border-color: #d0d7de;
+    -fx-text-fill: #1f2328;
+}
+
+.theme-light #symbolTableToggleButton:hover {
+    -fx-background-color: #dde3ea;
+    -fx-border-color: #0969da;
+    -fx-effect: dropshadow(gaussian, rgba(9,105,218,0.2), 10, 0, 0, 0);
+}
+
+.theme-light .symbol-table-panel .table-view {
+    -fx-background-color: #ffffff;
+}
+
+.theme-light .symbol-table-panel .table-view .column-header-background {
+    -fx-background-color: #f6f8fa;
+    -fx-border-color: #d0d7de;
+}
+
+.theme-light .symbol-table-panel .table-view .column-header .label {
+    -fx-text-fill: #0969da;
+}
+
+.theme-light .symbol-table-panel .table-row-cell:hover {
+    -fx-background-color: #f0f3f6;
+}
+
+.theme-light .symbol-table-panel .table-cell {
+    -fx-text-fill: #1f2328;
+}
+
+.theme-light .symbol-table-panel .table-view .placeholder .label {
+    -fx-text-fill: #656d76;
+}
+
+/* ABAS DO INSPETOR */
+.inspector-tab-pane {
+    -fx-background-color: #161b22;
+}
+
+.inspector-tab-pane > .tab-header-area {
+    -fx-background-color: #1c2333;
+    -fx-border-color: #30363d;
+    -fx-border-width: 0 0 1px 0;
+    -fx-padding: 0;
+}
+
+.inspector-tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-background-color: transparent;
+    -fx-padding: 6px 16px;
+}
+
+.inspector-tab-pane > .tab-header-area > .headers-region > .tab .tab-label {
+    -fx-text-fill: #8b949e;
+    -fx-font-size: 12px;
+}
+
+.inspector-tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: #161b22;
+    -fx-border-color: #58a6ff transparent transparent transparent;
+    -fx-border-width: 2px 0 0 0;
+}
+
+.inspector-tab-pane > .tab-header-area > .headers-region > .tab:selected .tab-label {
+    -fx-text-fill: #e6edf3;
+}
+
+.inspector-tab-pane > .tab-header-area > .headers-region > .tab:hover .tab-label {
+    -fx-text-fill: #c9d1d9;
+}
+
+.inspector-tab-pane > .tab-content-area {
+    -fx-background-color: #161b22;
+}
+
+.inspector-tab-pane .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+/* TEMA CLARO - ABAS DO INSPETOR */
+.theme-light .inspector-tab-pane {
+    -fx-background-color: #f6f8fa;
+}
+
+.theme-light .inspector-tab-pane > .tab-header-area {
+    -fx-background-color: #eaeef2;
+    -fx-border-color: #d0d7de;
+}
+
+.theme-light .inspector-tab-pane > .tab-header-area > .headers-region > .tab .tab-label {
+    -fx-text-fill: #656d76;
+}
+
+.theme-light .inspector-tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: #f6f8fa;
+    -fx-border-color: #0969da transparent transparent transparent;
+}
+
+.theme-light .inspector-tab-pane > .tab-header-area > .headers-region > .tab:selected .tab-label {
+    -fx-text-fill: #1f2328;
+}
+
+.theme-light .inspector-tab-pane > .tab-header-area > .headers-region > .tab:hover .tab-label {
+    -fx-text-fill: #1f2328;
+}
+
+.theme-light .inspector-tab-pane > .tab-content-area {
+    -fx-background-color: #f6f8fa;
+}
 
 /* APLICAÇÃO GERAL NO MODO CLARO */
 .theme-light {

@@ -9,6 +9,7 @@ public class Symbol {
     private final int line;
     private final int column;
     private final int offset;
+    private int scopeDepth;
 
     private boolean initialized;
     private boolean used;
@@ -19,6 +20,7 @@ public class Symbol {
         this.line        = line;
         this.column      = column;
         this.offset      = offset;
+        this.scopeDepth  = 0;
         this.initialized = false;
         this.used        = false;
     }
@@ -28,6 +30,9 @@ public class Symbol {
     public int getLine()       { return line;    }
     public int getColumn()     { return column;  }
     public int getOffset()     { return offset;  }
+
+    public int getScopeDepth()             { return scopeDepth; }
+    public void setScopeDepth(int depth)   { this.scopeDepth = depth; }
 
     public boolean isInitialized() { return initialized; }
     public void setInitialized(boolean initialized) { this.initialized = initialized; }

@@ -27,6 +27,16 @@
 
                 <Region HBox.hgrow="ALWAYS" />
 
+                <Button fx:id="inspectorToggleButton"
+                        id="symbolTableToggleButton"
+                        text="⊞ Inspetor"
+                        onAction="#toggleInspector"
+                        style="-fx-cursor: hand;">
+                    <tooltip>
+                        <Tooltip text="Abrir/fechar painel de tokens e símbolos"/>
+                    </tooltip>
+                </Button>
+
                 <Button fx:id="themeToggleButton"
                         id="themeToggleButton"
                         text="☀ Light Mode"
@@ -54,6 +64,43 @@
         <TabPane fx:id="editorTabPane" tabClosingPolicy="ALL_TABS">
         </TabPane>
     </center>
+    <right>
+        <VBox fx:id="inspectorPanel" prefWidth="360" visible="false" managed="false"
+              styleClass="symbol-table-panel">
+            <HBox alignment="CENTER_LEFT" styleClass="symbol-panel-header">
+                <Label text="INSPETOR" styleClass="symbol-panel-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="✕" onAction="#toggleInspector" styleClass="symbol-panel-close"/>
+            </HBox>
+            <TabPane fx:id="inspectorTabPane" tabClosingPolicy="UNAVAILABLE"
+                     styleClass="inspector-tab-pane" VBox.vgrow="ALWAYS">
+                <tabs>
+                    <Tab text="Símbolos">
+                        <TableView fx:id="symbolTableView">
+                            <columns>
+                                <TableColumn fx:id="symNameCol" text="Nome" prefWidth="85"/>
+                                <TableColumn fx:id="symTypeCol" text="Tipo" prefWidth="60"/>
+                                <TableColumn fx:id="symScopeCol" text="Escopo" prefWidth="50"/>
+                                <TableColumn fx:id="symLineCol" text="Linha" prefWidth="42"/>
+                                <TableColumn fx:id="symInitCol" text="Init" prefWidth="35"/>
+                                <TableColumn fx:id="symUsedCol" text="Usado" prefWidth="45"/>
+                            </columns>
+                        </TableView>
+                    </Tab>
+                    <Tab text="Tokens">
+                        <TableView fx:id="tokenTableView">
+                            <columns>
+                                <TableColumn fx:id="tokLexemeCol" text="Lexema" prefWidth="100"/>
+                                <TableColumn fx:id="tokTypeCol" text="Tipo" prefWidth="110"/>
+                                <TableColumn fx:id="tokLineCol" text="Linha" prefWidth="45"/>
+                                <TableColumn fx:id="tokColCol" text="Col" prefWidth="40"/>
+                            </columns>
+                        </TableView>
+                    </Tab>
+                </tabs>
+            </TabPane>
+        </VBox>
+    </right>
     <bottom>
         <TabPane prefHeight="200" tabClosingPolicy="UNAVAILABLE"
                  styleClass="bottom-tab-pane">

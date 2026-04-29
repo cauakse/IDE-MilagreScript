@@ -16,6 +16,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.event.ActionEvent;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
+import javafx.beans.property.SimpleStringProperty;
+import com.example.idemilagrescript.utils.Symbol;
 import org.fxmisc.richtext.CodeArea;
 
 import java.nio.file.Files;
@@ -57,9 +60,26 @@ public class MainController {
     @FXML private Label statusLabel;
     @FXML private Label autosaveLabel;
 
-    @FXML
-    private Button themeToggleButton;
+    @FXML private Button themeToggleButton;
+    @FXML private Button inspectorToggleButton;
+    @FXML private VBox inspectorPanel;
+    @FXML private TabPane inspectorTabPane;
+    @FXML private TableView<Symbol> symbolTableView;
+    @FXML private TableColumn<Symbol, String> symNameCol;
+    @FXML private TableColumn<Symbol, String> symTypeCol;
+    @FXML private TableColumn<Symbol, String> symScopeCol;
+    @FXML private TableColumn<Symbol, String> symLineCol;
+    @FXML private TableColumn<Symbol, String> symInitCol;
+    @FXML private TableColumn<Symbol, String> symUsedCol;
+    @FXML private TableView<Token> tokenTableView;
+    @FXML private TableColumn<Token, String> tokLexemeCol;
+    @FXML private TableColumn<Token, String> tokTypeCol;
+    @FXML private TableColumn<Token, String> tokLineCol;
+    @FXML private TableColumn<Token, String> tokColCol;
+
     private boolean isDarkMode = true;
+    private SymbolTable lastSymbolTable;
+    private List<Token> lastTokens = new ArrayList<>();
 
 
     @FXML
@@ -75,6 +95,18 @@ public class MainController {
         lineColumn.setCellValueFactory(new PropertyValueFactory<>("line"));
         columnColumn.setCellValueFactory(new PropertyValueFactory<>("column"));
         messageColumn.setCellValueFactory(new PropertyValueFactory<>("message"));
+
+        symNameCol.setCellValueFactory(s -> new SimpleStringProperty(s.getValue().getName()));
+        symTypeCol.setCellValueFactory(s -> new SimpleStringProperty(s.getValue().getType().name()));
+        symScopeCol.setCellValueFactory(s -> new SimpleStringProperty(String.valueOf(s.getValue().getScopeDepth())));
+        symLineCol.setCellValueFactory(s -> new SimpleStringProperty(String.valueOf(s.getValue().getLine())));
+        symInitCol.setCellValueFactory(s -> new SimpleStringProperty(s.getValue().isInitialized() ? "✓" : "✗"));
+        symUsedCol.setCellValueFactory(s -> new SimpleStringProperty(s.getValue().isUsed() ? "✓" : "✗"));
+
+        tokLexemeCol.setCellValueFactory(t -> new SimpleStringProperty(t.getValue().getLexeme()));
+        tokTypeCol.setCellValueFactory(t -> new SimpleStringProperty(t.getValue().getType().name()));
+        tokLineCol.setCellValueFactory(t -> new SimpleStringProperty(String.valueOf(t.getValue().getLine())));
+        tokColCol.setCellValueFactory(t -> new SimpleStringProperty(String.valueOf(t.getValue().getColumn())));
 
         editorTabPane.getSelectionModel().selectedItemProperty()
                 .addListener((obs, oldTab, newTab) -> {
@@ -294,6 +326,7 @@ public class MainController {
         String text = editor.getText();
 
         List<LexError> lexicalErrors = lexer.analyze(text);
+        lastTokens = new ArrayList<>(lexer.getTokens());
 
         ParserAnalyser parser = new ParserAnalyser(lexer.getTokens());
         List<LexError> syntacticErrors = parser.parse();
@@ -332,8 +365,15 @@ public class MainController {
         }
 
         if (semantic != null) {
-            SymbolTable symbolTable = semantic.getSymbolTable();
-            terminalService.printLine(symbolTable.toString());
+            lastSymbolTable = semantic.getSymbolTable();
+            terminalService.printLine(lastSymbolTable.toString());
+        } else {
+            lastSymbolTable = null;
+        }
+
+        if (inspectorPanel.isVisible()) {
+            refreshSymbolTable();
+            refreshTokenTable();
         }
 
         terminalService.printLine("─────────────────────────────────────────────");
@@ -366,6 +406,29 @@ public class MainController {
         Platform.runLater(() -> {
             problemsTable.getItems().setAll(errors);
         });
+    }
+
+    @FXML
+    private void toggleInspector() {
+        boolean show = !inspectorPanel.isVisible();
+        inspectorPanel.setVisible(show);
+        inspectorPanel.setManaged(show);
+        if (show) {
+            refreshSymbolTable();
+            refreshTokenTable();
+        }
+    }
+
+    private void refreshSymbolTable() {
+        if (lastSymbolTable == null) {
+            symbolTableView.getItems().clear();
+            return;
+        }
+        symbolTableView.getItems().setAll(lastSymbolTable.getAllSymbols());
+    }
+
+    private void refreshTokenTable() {
+        tokenTableView.getItems().setAll(lastTokens);
     }
 
     @FXML

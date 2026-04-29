@@ -5,9 +5,10 @@ import java.util.*;
 public class SymbolTable {
 
     private final List<Map<String, Symbol>> scopes = new ArrayList<>();
+    private final List<Symbol> allDeclared = new ArrayList<>();
 
     public SymbolTable() {
-        enterScope(); // escopo global
+        enterScope();
     }
 
     public void enterScope() {
@@ -26,9 +27,11 @@ public class SymbolTable {
     public boolean declare(Symbol symbol) {
         Map<String, Symbol> current = currentScope();
         if (current.containsKey(symbol.getName())) {
-            return false; // duplicata
+            return false;
         }
+        symbol.setScopeDepth(scopes.size() - 1);
         current.put(symbol.getName(), symbol);
+        allDeclared.add(symbol);
         return true;
     }
 
@@ -53,11 +56,7 @@ public class SymbolTable {
     }
 
     public List<Symbol> getAllSymbols() {
-        List<Symbol> all = new ArrayList<>();
-        for (Map<String, Symbol> scope : scopes) {
-            all.addAll(scope.values());
-        }
-        return all;
+        return new ArrayList<>(allDeclared);
     }
 
     public int depth() {

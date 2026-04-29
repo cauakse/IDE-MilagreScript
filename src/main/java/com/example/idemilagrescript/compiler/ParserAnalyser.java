@@ -229,6 +229,7 @@ public class ParserAnalyser {
 
             if (isCastExpression()) {
                 advance();
+                parseTipo();
                 consume(TokenType.FECHA_PAREN, "')'");
                 parseFator();
                 return;
