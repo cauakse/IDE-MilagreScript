@@ -16,7 +16,7 @@ public class Main extends Application {
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/application.css")).toExternalForm());
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/editor.css")).toExternalForm());
         stage.setTitle("MilagreScript IDE");
-        stage.setScene(scene);
+        stage.setScene(scene);  
         stage.show();
     }
 

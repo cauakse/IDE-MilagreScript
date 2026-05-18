@@ -3,6 +3,7 @@ package com.example.idemilagrescript;
 import com.example.idemilagrescript.compiler.LexError;
 import com.example.idemilagrescript.compiler.LexerAnalyser;
 import com.example.idemilagrescript.compiler.SemanticAnalyser;
+import com.example.idemilagrescript.compiler.IntermediateCodeGenerator;
 import com.example.idemilagrescript.utils.SymbolTable;
 import com.example.idemilagrescript.compiler.ParserAnalyser;
 import com.example.idemilagrescript.editor.EditorService;
@@ -370,6 +371,26 @@ public class MainController {
         } else {
             lastSymbolTable = null;
         }
+
+        //tive que tratar assim, porque nao gerava com erros e aviso, sendo que o aviso nao deve barrar de gerar o codigo intermediario
+        //porque o aviso está dentro da lista semanticErrors, então seu MainController trata aviso como se fosse erro
+        boolean hasSemanticError = semanticErrors.stream()
+        .anyMatch(e -> !e.getMessage().startsWith("[AVISO]"));
+
+        if (lexicalErrors.isEmpty() && syntacticErrors.isEmpty() && !hasSemanticError) {
+            IntermediateCodeGenerator generator =
+                    new IntermediateCodeGenerator(lexer.getTokens());
+
+            List<String> intermediateCode = generator.generate();
+
+            terminalService.printLine("Código Intermediário:");
+            for (String line : intermediateCode) {
+                terminalService.printLine(line);
+            }
+        } else {
+            terminalService.printLine("Código intermediário não gerado devido a erros anteriores.");
+        }
+
 
         if (inspectorPanel.isVisible()) {
             refreshSymbolTable();

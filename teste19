@@ -1,0 +1,5 @@
+string nome = "Lud";
+string sobrenome = "Sambinelli";
+string completo;
+
+completo = nome + sobrenome;
