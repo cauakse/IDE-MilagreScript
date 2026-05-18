@@ -862,6 +862,80 @@
     -fx-background-color: #f6f8fa;
 }
 
+/* PAINEL CÓDIGO INTERMEDIÁRIO */
+.intermediate-code-header {
+    -fx-padding: 6px 10px;
+    -fx-border-color: #30363d;
+    -fx-border-width: 0 0 1px 0;
+    -fx-background-color: #1c2333;
+}
+
+.theme-light .intermediate-code-header {
+    -fx-border-color: #d0d7de;
+    -fx-background-color: #eaeef2;
+}
+
+#optimizeToggleBtn {
+    -fx-background-color: #238636;
+    -fx-border-color: rgba(240,246,252,0.1);
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-border-width: 1px;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 11px;
+    -fx-padding: 4px 12px;
+    -fx-cursor: hand;
+}
+
+#optimizeToggleBtn:hover {
+    -fx-background-color: #2ea043;
+    -fx-effect: dropshadow(gaussian, rgba(35,134,54,0.3), 8, 0, 0, 0);
+}
+
+.theme-light #optimizeToggleBtn {
+    -fx-background-color: #1a7f37;
+}
+
+.theme-light #optimizeToggleBtn:hover {
+    -fx-background-color: #218b3b;
+    -fx-effect: dropshadow(gaussian, rgba(26,127,55,0.25), 8, 0, 0, 0);
+}
+
+#codeViewLabel {
+    -fx-text-fill: #3fb950;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 2px 8px;
+    -fx-background-color: rgba(63,185,80,0.12);
+    -fx-background-radius: 10px;
+}
+
+.theme-light #codeViewLabel {
+    -fx-text-fill: #1a7f37;
+    -fx-background-color: rgba(26,127,55,0.1);
+}
+
+#intermediateCodeArea {
+    -fx-background-color: #0d1117;
+    -fx-text-fill: #79c0ff;
+    -fx-font-family: 'JetBrains Mono', monospace;
+    -fx-font-size: 12.5px;
+}
+
+#intermediateCodeArea .content {
+    -fx-background-color: #0d1117;
+    -fx-padding: 10px 14px;
+}
+
+.theme-light #intermediateCodeArea {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #0550ae;
+}
+
+.theme-light #intermediateCodeArea .content {
+    -fx-background-color: #ffffff;
+}
+
 /* APLICAÇÃO GERAL NO MODO CLARO */
 .theme-light {
     -fx-background-color: #f4f4f4;

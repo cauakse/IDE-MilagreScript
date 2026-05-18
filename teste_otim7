@@ -1,0 +1,8 @@
+int a = 10;
+int b = 10;
+if (a == b) {
+    int dentro = a + b;
+} else {
+    int fora = a - b;
+}
+int fim = a * 1 + 0;

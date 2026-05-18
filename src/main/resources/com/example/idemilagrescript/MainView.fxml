@@ -97,6 +97,20 @@
                             </columns>
                         </TableView>
                     </Tab>
+                    <Tab text="Cod. Intermediario">
+                        <VBox spacing="0">
+                            <HBox alignment="CENTER_LEFT" spacing="8"
+                                  styleClass="intermediate-code-header">
+                                <Button fx:id="toggleOptimizedBtn" text="Mostrar Otimizado"
+                                        onAction="#toggleOptimizedCode"
+                                        id="optimizeToggleBtn"/>
+                                <Label fx:id="codeViewLabel" text="Original" id="codeViewLabel"/>
+                            </HBox>
+                            <TextArea fx:id="intermediateCodeArea" editable="false"
+                                      wrapText="false" VBox.vgrow="ALWAYS"
+                                      id="intermediateCodeArea"/>
+                        </VBox>
+                    </Tab>
                 </tabs>
             </TabPane>
         </VBox>

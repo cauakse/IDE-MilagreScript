@@ -1,0 +1,5 @@
+int x = 10;
+int y = 20;
+int soma = x + y;
+int diff = x - y;
+int prod = x * y;

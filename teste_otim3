@@ -1,0 +1,5 @@
+int a = 5;
+int b = a + 0;
+int c = a * 1;
+int d = a * 0;
+int e = a - a;

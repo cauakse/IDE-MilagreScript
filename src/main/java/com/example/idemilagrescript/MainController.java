@@ -4,6 +4,7 @@ import com.example.idemilagrescript.compiler.LexError;
 import com.example.idemilagrescript.compiler.LexerAnalyser;
 import com.example.idemilagrescript.compiler.SemanticAnalyser;
 import com.example.idemilagrescript.compiler.IntermediateCodeGenerator;
+import com.example.idemilagrescript.compiler.IntermediateCodeOptimizer;
 import com.example.idemilagrescript.utils.SymbolTable;
 import com.example.idemilagrescript.compiler.ParserAnalyser;
 import com.example.idemilagrescript.editor.EditorService;
@@ -77,10 +78,16 @@ public class MainController {
     @FXML private TableColumn<Token, String> tokTypeCol;
     @FXML private TableColumn<Token, String> tokLineCol;
     @FXML private TableColumn<Token, String> tokColCol;
+    @FXML private Button toggleOptimizedBtn;
+    @FXML private Label codeViewLabel;
+    @FXML private TextArea intermediateCodeArea;
 
     private boolean isDarkMode = true;
     private SymbolTable lastSymbolTable;
     private List<Token> lastTokens = new ArrayList<>();
+    private List<String> lastIntermediateCode = new ArrayList<>();
+    private List<String> lastOptimizedCode = new ArrayList<>();
+    private boolean showingOptimized = false;
 
 
     @FXML
@@ -382,19 +389,30 @@ public class MainController {
                     new IntermediateCodeGenerator(lexer.getTokens());
 
             List<String> intermediateCode = generator.generate();
+            lastIntermediateCode = new ArrayList<>(intermediateCode);
+
+            IntermediateCodeOptimizer optimizer = new IntermediateCodeOptimizer();
+            lastOptimizedCode = optimizer.optimize(intermediateCode);
 
             terminalService.printLine("Código Intermediário:");
             for (String line : intermediateCode) {
                 terminalService.printLine(line);
             }
+
+            terminalService.printLine("Código Otimizado:");
+            for (String line : lastOptimizedCode) {
+                terminalService.printLine(line);
+            }
         } else {
+            lastIntermediateCode = new ArrayList<>();
+            lastOptimizedCode = new ArrayList<>();
             terminalService.printLine("Código intermediário não gerado devido a erros anteriores.");
         }
-
 
         if (inspectorPanel.isVisible()) {
             refreshSymbolTable();
             refreshTokenTable();
+            refreshIntermediateCode();
         }
 
         terminalService.printLine("─────────────────────────────────────────────");
@@ -437,7 +455,26 @@ public class MainController {
         if (show) {
             refreshSymbolTable();
             refreshTokenTable();
+            refreshIntermediateCode();
         }
+    }
+
+    @FXML
+    private void toggleOptimizedCode() {
+        showingOptimized = !showingOptimized;
+        if (showingOptimized) {
+            toggleOptimizedBtn.setText("Mostrar Original");
+            codeViewLabel.setText("Otimizado");
+        } else {
+            toggleOptimizedBtn.setText("Mostrar Otimizado");
+            codeViewLabel.setText("Original");
+        }
+        refreshIntermediateCode();
+    }
+
+    private void refreshIntermediateCode() {
+        List<String> code = showingOptimized ? lastOptimizedCode : lastIntermediateCode;
+        intermediateCodeArea.setText(String.join("\n", code));
     }
 
     private void refreshSymbolTable() {

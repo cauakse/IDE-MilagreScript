@@ -1,0 +1,6 @@
+int a = 5;
+int b = 3;
+int x = a + b;
+int y = a + b;
+int z = a * b;
+int w = a * b;
