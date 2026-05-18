@@ -1,4 +1,6 @@
-int a;
-double x = 10.5;
+int x = 10;
+int y = 5;
 
-a = (int) x;
+if (x < 100 || x > 200 && x != y) {
+    x = 0;
+}
