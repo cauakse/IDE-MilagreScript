@@ -1,12 +1,7 @@
 package com.example.idemilagrescript;
 
-import com.example.idemilagrescript.compiler.LexError;
-import com.example.idemilagrescript.compiler.LexerAnalyser;
-import com.example.idemilagrescript.compiler.SemanticAnalyser;
-import com.example.idemilagrescript.compiler.IntermediateCodeGenerator;
-import com.example.idemilagrescript.compiler.IntermediateCodeOptimizer;
+import com.example.idemilagrescript.compiler.*;
 import com.example.idemilagrescript.utils.SymbolTable;
-import com.example.idemilagrescript.compiler.ParserAnalyser;
 import com.example.idemilagrescript.editor.EditorService;
 import com.example.idemilagrescript.project.FileManager;
 import com.example.idemilagrescript.terminal.PtyTerminalService;
@@ -403,6 +398,34 @@ public class MainController {
             for (String line : lastOptimizedCode) {
                 terminalService.printLine(line);
             }
+            // Parte da geração do codigo em Assembly
+            try {
+                SimpSimGenerator simpSimGen = new SimpSimGenerator(lastOptimizedCode, lastSymbolTable);
+                List<String> machineCode = simpSimGen.generate();
+
+                terminalService.printLine("Assembly SimpSIM Gerado:");
+                for (String line : machineCode) {
+                    terminalService.printLine(line);
+                }
+
+                // Salva o arquivo fisicamente na pasta
+                Tab currentTab = editorTabPane.getSelectionModel().getSelectedItem();
+                if (currentTab != null && currentTab.getUserData() != null) {
+                    Path currentPath = (Path) currentTab.getUserData();
+
+                    // So faz a troca da extensão para .asm
+                    String asmFileName = currentPath.getFileName().toString().replaceFirst("[.][^.]+$", "") + ".asm";
+                    Path asmPath = currentPath.getParent().resolve(asmFileName);
+
+                    Files.write(asmPath, machineCode);
+                    terminalService.printLine("Compilação concluída! Arquivo gerado: " + asmPath.getFileName());
+                    Platform.runLater(() -> fileManager.openDirectory(fileManager.getCurrentRoot()));
+                }
+            } catch (Exception e) {
+                terminalService.printLine("Erro ao gerar Código de Máquina: " + e.getMessage());
+                e.printStackTrace();
+            }
+
         } else {
             lastIntermediateCode = new ArrayList<>();
             lastOptimizedCode = new ArrayList<>();
