@@ -373,7 +373,10 @@ public class IntermediateCodeGenerator {
     }
 
     private String parseFator() {
-        if (match(TokenType.IDENTIFICADOR, TokenType.NUMERO, TokenType.STRING_LITERAL)) return previous().getLexeme();
+        if (match(TokenType.IDENTIFICADOR, TokenType.NUMERO)) return previous().getLexeme();
+
+        // STRING_LITERAL recebe aspas para não ser confundida com número ou variável
+        if (match(TokenType.STRING_LITERAL)) return "\"" + previous().getLexeme() + "\"";
 
         if (check(TokenType.ABRE_PAREN)) {
             if (isCastExpression()) {

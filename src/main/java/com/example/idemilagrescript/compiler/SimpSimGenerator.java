@@ -3,10 +3,7 @@ package com.example.idemilagrescript.compiler;
 import com.example.idemilagrescript.utils.Symbol;
 import com.example.idemilagrescript.utils.SymbolTable;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,7 +29,8 @@ public class SimpSimGenerator {
     private static final Pattern RETURN_VOID_P = Pattern.compile("^return$");
     private static final Pattern ASSIGN_NOT_P = Pattern.compile("^(\\S+) = !(\\S+)$");
     private static final Pattern ASSIGN_CAST_P = Pattern.compile("^(\\S+) = \\((\\w+)\\) (\\S+)$");
-
+    private final Map<String, Integer> stringLiterals = new LinkedHashMap<>();
+    private int stringLiteralCount = 0;
     public SimpSimGenerator(List<String> tacCode, SymbolTable symbolTable) {
         this.tacCode = tacCode;
         this.symbolTable = symbolTable;
@@ -381,7 +379,7 @@ public class SimpSimGenerator {
 
         Set<String> allocated = new LinkedHashSet<>();
 
-        // Aloca variáveis da Tabela de Símbolos garantindo nomes únicos
+        // Variáveis da tabela de símbolos
         for (Symbol sym : symbolTable.getAllSymbols()) {
             if (!allocated.contains(sym.getName())) {
                 machineCode.add(sym.getName() + ": db 0");
@@ -389,23 +387,61 @@ public class SimpSimGenerator {
             }
         }
 
-        // Aloca variáveis temporárias do TAC (t1, t2...) garantindo nomes únicos
+        // Temporários do TAC (t1, t2...)
         for (String temp : temporaries) {
             if (!allocated.contains(temp)) {
                 machineCode.add(temp + ": db 0");
                 allocated.add(temp);
             }
         }
+
+        // Literais de string — alocados com seu ID como valor inicial
+        if (!stringLiterals.isEmpty()) {
+            machineCode.add("; --- LITERAIS DE STRING ---");
+            for (Map.Entry<String, Integer> entry : stringLiterals.entrySet()) {
+                if (!allocated.contains(entry.getKey())) {
+                    machineCode.add("; \"" + entry.getKey() + "\" => ID " + entry.getValue());
+                    machineCode.add(entry.getKey() + ": db " + entry.getValue());
+                    allocated.add(entry.getKey());
+                }
+            }
+        }
+    }
+
+    private String resolveIfStringLiteral(String operand) {
+        if (operand.startsWith("\"") && operand.endsWith("\"")) {
+            String key = operand.substring(1, operand.length() - 1);
+            // str_ garante label válido mesmo para "1231" → str_1231
+            String label = "str_" + key.replaceAll("[^a-zA-Z0-9_]", "_");
+            stringLiterals.putIfAbsent(label, ++stringLiteralCount);
+            return label;
+        }
+        return operand; // não é string literal, devolve como veio
     }
 
     private void loadOperand(String reg, String operand) {
-        // Se for um número solto (ex: 5 ou -10), usa Carga Imediata
-        if (operand.matches("-?\\d+(\\.\\d+)?")) {
-            machineCode.add("load " + reg + ", " + operand);
-        } else {
-            // Se for variável/temporário, usa Carga Direta com colchetes
-            machineCode.add("load " + reg + ", [" + operand + "]");
+        // 1. String literal com aspas tem prioridade
+        String resolved = resolveIfStringLiteral(operand);
+        if (!resolved.equals(operand)) {
+            machineCode.add("load " + reg + ", [" + resolved + "]");
+            return;
         }
+
+        // 2. Char literal → valor ASCII  ('a' → 97)
+        if (operand.startsWith("'") && operand.endsWith("'") && operand.length() == 3) {
+            machineCode.add("load " + reg + ", " + (int) operand.charAt(1));
+            return;
+        }
+
+        // 3. Numérico → trunca para inteiro (3.14 → 3, -2.9 → -2)
+        if (operand.matches("-?\\d+(\\.\\d+)?")) {
+            long intVal = (long) Double.parseDouble(operand);
+            machineCode.add("load " + reg + ", " + intVal);
+            return;
+        }
+
+        // 4. Variável/temporário → acesso por endereço
+        machineCode.add("load " + reg + ", [" + operand + "]");
     }
 
     private void storeOperand(String reg, String operand) {

@@ -1,0 +1,12 @@
+
+
+int caua = 5;
+
+while(caua>1){
+   string dois = "1231";
+   if(caua/3 > 5){
+      dois = "doisabubeblebla";
+    } 
+   	    	
+   caua = caua -1;
+}
